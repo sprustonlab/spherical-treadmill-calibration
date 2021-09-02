@@ -29,7 +29,7 @@ namespace SphericalTreadmillCalibration
             msgBuffer = new List<Data>();
 
             // Device name
-            string deviceName = QuestionString("device name? (e.g. sphericalTreadmill):");
+            string deviceName = QuestionString("device name? (leave empty for sphericalTreadmill):","sphericalTreadmill");
 
             // Connect to broker.
             #region Connect to Broker.
@@ -57,7 +57,7 @@ namespace SphericalTreadmillCalibration
             #endregion
 
             // Ask radius.
-            float radius = float.Parse(QuestionString("Radius of ball in VR World units? (spherical: 1.976):"));
+            float radius = float.Parse(QuestionString("Radius of ball in VR World units? (leave empty for spherical: 1.976):","1.976"));
             float circumference = 2f * (float)Math.PI * radius;
             float arcLength = circumference / 2;
 
@@ -177,10 +177,15 @@ namespace SphericalTreadmillCalibration
             }
         }
 
-        public static string QuestionString(string msg)
+        public static string QuestionString(string msg, string defaultValue=null)
         {
             Console.WriteLine(msg);
             string reply = Console.ReadLine();
+            // Check if empty and default.
+            if (String.IsNullOrEmpty(reply) & !String.IsNullOrEmpty(defaultValue))
+            {
+                reply = defaultValue;
+            }
             return reply;
         }
 
