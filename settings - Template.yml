@@ -1,0 +1,3 @@
+brokerIp: "127.0.0.1" # IP of MQTT broker
+deviceName: "sphericalTreadmill" # Name of device on MQTT broker.
+radius: 1.976 # radius of the ball in VR units.

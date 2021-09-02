@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
+using YamlDotNet.Serialization;
 
 namespace SphericalTreadmillCalibration
 {
@@ -20,6 +21,13 @@ namespace SphericalTreadmillCalibration
             public float roll;
             public float yaw;
         }
+        public class Settings
+        {
+            public string brokerIp;
+            public string deviceName;
+            public float radius;
+        }
+        public static Settings settings;
         public static List<Data> msgBuffer;
 
         static void Main(string[] args)
@@ -28,14 +36,27 @@ namespace SphericalTreadmillCalibration
             Console.WriteLine("Please ensure the scaling is set to 1 for calibration\n");
             msgBuffer = new List<Data>();
 
-            // Device name
-            string deviceName = QuestionString("device name? (leave empty for sphericalTreadmill):","sphericalTreadmill");
+            // Read settings file.
+            DirectoryInfo mainDir = new DirectoryInfo(Directory.GetCurrentDirectory());
+            var yamlFiles = mainDir.GetFiles("settings.yml");
+            if (yamlFiles.Length==0) { Exit("Could not find settings.yml"); }
+            FileInfo yamlFile = yamlFiles[0];
+
+            var dse = new Deserializer();
+            //Console.WriteLine("Reading YAML: {0}", yamlFile.FullName);
+            using (var yamlStream = yamlFile.Open(FileMode.Open))
+            {
+                using (var yamlReader = new StreamReader(yamlStream, Encoding.UTF8, true))
+                {
+                    settings = dse.Deserialize<Settings>(yamlReader);
+                }
+            }
 
             // Connect to broker.
             #region Connect to Broker.
             IPAddress ipAdress = IPAddress.Parse("127.0.0.1");
             Console.WriteLine(String.Format("Connecting to: 127.0.0.1:1883"));
-            client = new MqttClient(ipAdress, 1883, false, null, null, MqttSslProtocols.None);
+            client = new MqttClient(settings.brokerIp, 1883, false, null, null, MqttSslProtocols.None);
             try
             {
                 byte msg = client.Connect(Guid.NewGuid().ToString());
@@ -50,15 +71,14 @@ namespace SphericalTreadmillCalibration
             #region Subscribe to topic
             client.MqttMsgPublishReceived += receiveMessage;
 
-            string topic = string.Format("{0}/Data", deviceName);
+            string topic = string.Format("{0}/Data", settings.deviceName);
             Console.WriteLine(String.Format("Subscribing to topic: {0}\n", topic));
             try { client.Subscribe(new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE }); }
             catch { Exit("Failed to subscribe to topic"); }
             #endregion
 
             // Ask radius.
-            float radius = float.Parse(QuestionString("Radius of ball in VR World units? (leave empty for spherical: 1.976):","1.976"));
-            float circumference = 2f * (float)Math.PI * radius;
+            float circumference = 2f * (float)Math.PI * settings.radius;
             float arcLength = circumference / 2;
 
             // Request axis to calibrate.
