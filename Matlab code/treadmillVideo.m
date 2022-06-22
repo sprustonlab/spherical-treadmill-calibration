@@ -38,6 +38,9 @@ gui.ax_hist1.XLabel.String = 'Pixel Value';
 gui.ax_hist1.YLabel.String = 'Probability';
 gui.ax_hist2.Title.String = 'Camera 2 Histogram';
 gui.ax_hist2.XLabel.String = 'Pixel Value';
+% add indicator light.
+gui.sgt = sgtitle(sprintf('Frame Count: %i',0));
+gui.frameCount = 0;
 %Connect to serial object
 s=serial(COMport);
 s.baudrate=1250000;
@@ -61,6 +64,7 @@ switch get(obj,'value')
             fread(s,s.bytesavailable); 
         end
     case 1 %start Video
+        gui.frameCount = 0;
         set(obj,'backgroundcolor','g','string','Stop Video');
         fclose(s)
         s.bytesavailablefcn={@baf,fig};
@@ -68,6 +72,7 @@ switch get(obj,'value')
         s.bytesavailablefcnmode='byte';
         fopen(s)
         fwrite(s,[251,0]);
+        set(fig,'userdata',gui);
 end
 
 function fdel(obj,event,s)
@@ -86,7 +91,11 @@ function updatehist(xnew,h)
 
 %Fires every 1800 bytes (one frame from each camera).  MCU sends frames at 20Hz
 function baf(obj,event,fig)
+
 gui=get(fig,'userdata');
+% update title.
+gui.frameCount = gui.frameCount+1;
+gui.sgt.String = sprintf('Frame Count: %i',gui.frameCount);
 if obj.bytesavailable<obj.bytesavailablefcncount
     disp('returned')  %error checking
     return
@@ -110,6 +119,7 @@ gui.im2.CData = reshape(raw1,[30,30]); %Map linear vector into 30 colums by 30 r
 % plot histogram
 updatehist(raw0,gui.hist1)
 updatehist(raw1,gui.hist2)
+set(fig,'userdata',gui);
 % toc
 % drawnow
 
