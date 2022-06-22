@@ -16,3 +16,4 @@ settings.yml
 # Build results
 [Dd]ebug/
 [Rr]elease/
+*.asv
