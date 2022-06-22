@@ -17,7 +17,7 @@ delete(instrfind)
 tic
 
 %Create UI and image to dump values into
-gui.fig=figure('tag','gvid','numbertitle','off','menubar','none','name','Fly Treadmill Video Monitor - Gus K Lott III, PhD - HHMI JFRC 2008');
+gui.fig=figure('tag','gvid','numbertitle','off','menubar','none','name','4-Axis Optical Motion Detection System');
 centerfig(gui.fig)
 % create axis.
 gui.ax_im1 = subplot(2,2,1,'DataAspectRatio',[1,1,1]);
@@ -25,8 +25,8 @@ gui.ax_im2 = subplot(2,2,2,'DataAspectRatio',[1,1,1]);
 gui.ax_hist1 = subplot(2,2,3);
 gui.ax_hist2 = subplot(2,2,4);
 % set blank images.
-gui.im1=imshow( zeros(30,30),'Parent',gui.ax_im1,'DisplayRange',[0,1]);
-gui.im2=imshow( zeros(30,30),'Parent',gui.ax_im2,'DisplayRange',[0,1]);
+gui.im1=imshow( zeros(30,30),'Parent',gui.ax_im1,'DisplayRange',[0,100]);
+gui.im2=imshow( zeros(30,30),'Parent',gui.ax_im2,'DisplayRange',[0,100]);
 % set blank histogram.
 gui.hist1 = histogram(gui.ax_hist1, zeros(60),20,'Normalization','probability');
 gui.hist2 = histogram(gui.ax_hist2, zeros(60),20,'Normalization','probability');
@@ -109,9 +109,9 @@ raw0=raw(1:2:end);
 raw1=raw(2:2:end);
 
 %remove bit 7 from all bytes.  Remove bit 6 from first pixel
-raw0=raw0-128; raw0(1)=raw0(1)-64;
+raw0=raw0-128; raw0(1)=raw0(1)-64; 
 raw1=raw1-128; raw1(1)=raw1(1)-64;
-raw0=raw0*2;
+raw0=raw0*2;% Johan: seems to scale to 0-100
 raw1=raw1*2;
 % plot image
 gui.im1.CData = reshape(raw0,[30,30]); %Map linear vector into 30 colums by 30 rows
